@@ -1,0 +1,29 @@
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import AccountManagement from '@/components/AccountManagement';
+import { prisma } from '@/lib/prisma';
+
+export default async function AccountSettingsPage() {
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect('/login');
+  }
+
+  const groups = await prisma.group.findMany({
+    where: { userId: session.user.id },
+    orderBy: { name: 'asc' },
+  });
+
+  return (
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        Account Management
+      </h2>
+      <p className="text-gray-600 dark:text-gray-400 mb-6">
+        Export your data, import from a backup, or delete your account.
+      </p>
+      <AccountManagement groups={groups} />
+    </div>
+  );
+}
