@@ -7,17 +7,17 @@
   "hideCredit": true,
   "package": "package.json",
   "replaceText": {
-    "^feat": "✨ Feature:",
-    "^fix": "🐛 Fix:",
-    "^perf": "⚡ Performance:",
-    "^docs": "📝 Docs:",
-    "^refactor": "♻️ Refactor:",
-    "^test": "✅ Test:",
-    "^chore": "🔧 Chore:",
-    "^ci": "👷 CI:",
-    "^style": "💄 Style:",
-    "^build": "📦 Build:",
-    "^revert": "⏪ Revert:"
+    "^feat": "✨ Feature",
+    "^fix": "🐛 Fix",
+    "^perf": "⚡ Performance",
+    "^docs": "📝 Docs",
+    "^refactor": "♻️ Refactor",
+    "^test": "✅ Test",
+    "^chore": "🔧 Chore",
+    "^ci": "👷 CI",
+    "^style": "💄 Style",
+    "^build": "📦 Build",
+    "^revert": "⏪ Revert"
   },
   "includeBranch": [
     "master"
