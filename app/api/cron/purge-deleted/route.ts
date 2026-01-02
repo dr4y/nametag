@@ -60,7 +60,7 @@ export async function GET(request: Request) {
       where: { deletedAt: { not: null, lt: cutoffDate } },
       select: { id: true },
     });
-    const personIds = personsToDelete.map((p) => p.id);
+    const personIds = personsToDelete.map((p: { id: string }) => p.id);
 
     // 3. Delete PersonGroups for persons being purged
     if (personIds.length > 0) {
