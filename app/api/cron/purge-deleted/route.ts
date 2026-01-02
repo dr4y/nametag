@@ -102,7 +102,7 @@ export async function GET(request: Request) {
       where: { deletedAt: { not: null, lt: cutoffDate } },
       select: { id: true },
     });
-    const groupIds = groupsToDelete.map((g) => g.id);
+    const groupIds = groupsToDelete.map((g: { id: string }) => g.id);
 
     // Delete PersonGroups for groups being purged
     if (groupIds.length > 0) {
@@ -125,7 +125,7 @@ export async function GET(request: Request) {
       where: { deletedAt: { not: null, lt: cutoffDate } },
       select: { id: true },
     });
-    const relationshipTypeIds = relationshipTypesToDelete.map((r) => r.id);
+    const relationshipTypeIds = relationshipTypesToDelete.map((r: { id: string }) => r.id);
 
     if (relationshipTypeIds.length > 0) {
       // Clear relationshipToUserId references to deleted types
