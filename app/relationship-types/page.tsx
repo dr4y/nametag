@@ -28,11 +28,18 @@ export default async function RelationshipTypesPage() {
       _count: {
         select: {
           relationships: true,
+          peopleWithRelation: true,
         },
       },
     },
     orderBy: { name: 'asc' },
   });
+
+  // Calculate total usage count (person-to-person + user-to-person relationships)
+  const relationshipTypesWithUsage = relationshipTypes.map((type) => ({
+    ...type,
+    totalUsageCount: type._count.relationships + type._count.peopleWithRelation,
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -57,7 +64,7 @@ export default async function RelationshipTypesPage() {
             </Link>
           </div>
 
-          {relationshipTypes.length > 0 ? (
+          {relationshipTypesWithUsage.length > 0 ? (
             <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-700">
@@ -77,7 +84,7 @@ export default async function RelationshipTypesPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {relationshipTypes.map((type) => (
+                  {relationshipTypesWithUsage.map((type) => (
                     <tr key={type.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
                         <div
@@ -90,7 +97,7 @@ export default async function RelationshipTypesPage() {
                           {type.label}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          Used {type._count.relationships} time(s)
+                          Used {type.totalUsageCount} time(s)
                         </div>
                       </td>
                       <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
@@ -118,7 +125,7 @@ export default async function RelationshipTypesPage() {
                           <DeleteRelationshipTypeButton
                             relationshipTypeId={type.id}
                             relationshipTypeName={type.label}
-                            usageCount={type._count.relationships}
+                            usageCount={type.totalUsageCount}
                           />
                         </div>
                       </td>
