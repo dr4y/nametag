@@ -27,12 +27,23 @@ export default function AccountManagement({ groups }: AccountManagementProps) {
 
   // Import state
   const [isImporting, setIsImporting] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [importMessage, setImportMessage] = useState('');
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importPreview, setImportPreview] = useState<{
     groups: number;
     people: number;
     customRelationshipTypes: number;
+  } | null>(null);
+  const [importValidation, setImportValidation] = useState<{
+    valid: boolean;
+    error?: string;
+    message?: string;
+    newPeopleCount?: number;
+    newGroupsCount?: number;
+    current?: number;
+    limit?: number;
+    totalAfterImport?: number;
   } | null>(null);
 
   // Delete state
@@ -89,18 +100,38 @@ export default function AccountManagement({ groups }: AccountManagementProps) {
 
     setImportFile(file);
     setImportMessage('');
+    setImportValidation(null);
+    setIsValidating(true);
 
     try {
       const text = await file.text();
       const data = JSON.parse(text);
 
-      // Validate and preview
+      // Validate file format
       if (data.version && data.groups && data.people) {
         setImportPreview({
           groups: data.groups.length,
           people: data.people.length,
           customRelationshipTypes: data.customRelationshipTypes?.length || 0,
         });
+
+        // Validate against tier limits
+        const validationResponse = await fetch('/api/user/import/validate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (validationResponse.ok) {
+          const validationResult = await validationResponse.json();
+          setImportValidation(validationResult);
+        } else {
+          setImportMessage('Failed to validate import data');
+          setImportFile(null);
+          setImportPreview(null);
+        }
       } else {
         setImportMessage('Invalid file format');
         setImportFile(null);
@@ -110,6 +141,8 @@ export default function AccountManagement({ groups }: AccountManagementProps) {
       setImportMessage('Invalid JSON file');
       setImportFile(null);
       setImportPreview(null);
+    } finally {
+      setIsValidating(false);
     }
   };
 
@@ -339,23 +372,71 @@ export default function AccountManagement({ groups }: AccountManagementProps) {
             </div>
           </button>
 
-          {importPreview && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-2">
-                Import Preview
+          {isValidating && (
+            <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Validating import data...
+              </p>
+            </div>
+          )}
+
+          {importPreview && !isValidating && importValidation && (
+            <div className={`border rounded-lg p-4 ${
+              importValidation.valid
+                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+            }`}>
+              <h4 className={`font-medium mb-2 ${
+                importValidation.valid
+                  ? 'text-blue-900 dark:text-blue-300'
+                  : 'text-red-900 dark:text-red-300'
+              }`}>
+                {importValidation.valid ? 'Import Preview' : 'Import Limit Exceeded'}
               </h4>
-              <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1">
-                <li>• {importPreview.groups} groups</li>
-                <li>• {importPreview.people} people</li>
-                <li>• {importPreview.customRelationshipTypes} custom relationship types</li>
-              </ul>
-              <button
-                onClick={handleImport}
-                disabled={isImporting}
-                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isImporting ? 'Importing...' : 'Confirm Import'}
-              </button>
+
+              {importValidation.valid ? (
+                <>
+                  <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1">
+                    <li>• {importPreview.groups} groups ({importValidation.newGroupsCount} new)</li>
+                    <li>• {importPreview.people} people ({importValidation.newPeopleCount} new)</li>
+                    <li>• {importPreview.customRelationshipTypes} custom relationship types</li>
+                  </ul>
+                  <button
+                    onClick={handleImport}
+                    disabled={isImporting}
+                    className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isImporting ? 'Importing...' : 'Confirm Import'}
+                  </button>
+                </>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-red-800 dark:text-red-400">
+                    {importValidation.message}
+                  </p>
+                  <div className="text-sm text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/40 p-3 rounded">
+                    <p className="font-medium mb-1">Current usage:</p>
+                    <ul className="space-y-1 ml-4">
+                      <li>• {importValidation.error === 'people' ? 'People' : 'Groups'}: {importValidation.current} / {importValidation.limit}</li>
+                      <li>• New from import: {importValidation.newPeopleCount || importValidation.newGroupsCount}</li>
+                      <li>• Total after import: {importValidation.totalAfterImport}</li>
+                    </ul>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setImportFile(null);
+                      setImportPreview(null);
+                      setImportValidation(null);
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                      }
+                    }}
+                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Choose Different File
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
