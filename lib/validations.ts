@@ -56,7 +56,7 @@ export const checkVerificationSchema = z.object({
 // Person schemas
 // ============================================
 
-const reminderIntervalUnitSchema = z.enum(['WEEKS', 'MONTHS', 'YEARS']);
+const reminderIntervalUnitSchema = z.enum(['DAYS', 'WEEKS', 'MONTHS', 'YEARS']);
 
 const importantDateSchema = z.object({
   id: z.string().optional(),

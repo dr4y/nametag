@@ -256,6 +256,63 @@ describe('validations', () => {
       });
       expect(result.success).toBe(false);
     });
+
+    it('should accept DAYS as reminder interval unit', () => {
+      const result = createPersonSchema.safeParse({
+        name: 'John',
+        contactReminderEnabled: true,
+        contactReminderInterval: 7,
+        contactReminderIntervalUnit: 'DAYS',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept WEEKS as reminder interval unit', () => {
+      const result = createPersonSchema.safeParse({
+        name: 'John',
+        contactReminderEnabled: true,
+        contactReminderInterval: 2,
+        contactReminderIntervalUnit: 'WEEKS',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept MONTHS as reminder interval unit', () => {
+      const result = createPersonSchema.safeParse({
+        name: 'John',
+        contactReminderEnabled: true,
+        contactReminderInterval: 3,
+        contactReminderIntervalUnit: 'MONTHS',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept YEARS as reminder interval unit', () => {
+      const result = createPersonSchema.safeParse({
+        name: 'John',
+        contactReminderEnabled: true,
+        contactReminderInterval: 1,
+        contactReminderIntervalUnit: 'YEARS',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept DAYS for important date reminders', () => {
+      const result = createPersonSchema.safeParse({
+        name: 'John',
+        importantDates: [
+          {
+            title: 'Medication',
+            date: '2024-06-15',
+            reminderEnabled: true,
+            reminderType: 'RECURRING',
+            reminderInterval: 3,
+            reminderIntervalUnit: 'DAYS',
+          },
+        ],
+      });
+      expect(result.success).toBe(true);
+    });
   });
 
   describe('createGroupSchema', () => {
@@ -542,6 +599,66 @@ describe('validations', () => {
       const result = updateImportantDateSchema.safeParse({
         title: 'Birthday',
         date: 'not-a-date',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should accept DAYS as reminder interval unit', () => {
+      const result = updateImportantDateSchema.safeParse({
+        title: 'Daily medication',
+        date: '2024-06-15',
+        reminderEnabled: true,
+        reminderType: 'RECURRING',
+        reminderInterval: 1,
+        reminderIntervalUnit: 'DAYS',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept WEEKS as reminder interval unit', () => {
+      const result = updateImportantDateSchema.safeParse({
+        title: 'Weekly checkup',
+        date: '2024-06-15',
+        reminderEnabled: true,
+        reminderType: 'RECURRING',
+        reminderInterval: 2,
+        reminderIntervalUnit: 'WEEKS',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept MONTHS as reminder interval unit', () => {
+      const result = updateImportantDateSchema.safeParse({
+        title: 'Monthly review',
+        date: '2024-06-15',
+        reminderEnabled: true,
+        reminderType: 'RECURRING',
+        reminderInterval: 1,
+        reminderIntervalUnit: 'MONTHS',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept YEARS as reminder interval unit', () => {
+      const result = updateImportantDateSchema.safeParse({
+        title: 'Annual birthday',
+        date: '2024-06-15',
+        reminderEnabled: true,
+        reminderType: 'RECURRING',
+        reminderInterval: 1,
+        reminderIntervalUnit: 'YEARS',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject invalid reminder interval unit', () => {
+      const result = updateImportantDateSchema.safeParse({
+        title: 'Birthday',
+        date: '2024-06-15',
+        reminderEnabled: true,
+        reminderType: 'RECURRING',
+        reminderInterval: 1,
+        reminderIntervalUnit: 'INVALID',
       });
       expect(result.success).toBe(false);
     });
