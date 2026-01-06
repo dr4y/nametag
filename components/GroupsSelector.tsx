@@ -161,7 +161,7 @@ export default function GroupsSelector({
           </svg>
           <div className="flex-1">
             <p className="text-sm text-blue-800 dark:text-blue-300">
-              <span className="font-medium">Quick tip:</span> Don't see a group? Just type its name and press <kbd className="px-1.5 py-0.5 text-xs bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 rounded">Enter</kbd> to create it on the fly!
+              <span className="font-medium">Quick tip:</span> Don&apos;t see a group? Just type its name and press <kbd className="px-1.5 py-0.5 text-xs bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 rounded">Enter</kbd> to create it on the fly!
             </p>
           </div>
         </div>
