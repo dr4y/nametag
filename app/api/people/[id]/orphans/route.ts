@@ -79,14 +79,14 @@ export const GET = withAuth(async (_request, session, context) => {
           name: true,
           surname: true,
           nickname: true,
-          relationshipToUserId: true,
+          relationshipToUser: true, // Include the actual relation to check if it's soft-deleted
         },
       });
 
       // A person becomes an orphan if:
-      // 1. They have no direct relationship to the user (relationshipToUserId is null)
+      // 1. They have no direct relationship to the user (or it's soft-deleted)
       // 2. After deleting this person, they would have no other relationships
-      if (relatedPerson && !relatedPerson.relationshipToUserId && otherRelationships.length === 0) {
+      if (relatedPerson && !relatedPerson.relationshipToUser && otherRelationships.length === 0) {
         potentialOrphans.push({
           id: relatedPerson.id,
           fullName: formatFullName(relatedPerson),
