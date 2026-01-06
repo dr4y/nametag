@@ -497,14 +497,14 @@ export default function UnifiedNetworkGraph({
             onRemove={(itemId) =>
               setSelectedGroupIds(selectedGroupIds.filter((id) => id !== itemId))
             }
+            onClearAll={() => setSelectedGroupIds([])}
             placeholder="Type to filter by groups..."
             emptyMessage="No groups found matching"
-            helpText="Select one or more groups to filter the network. Leave empty to show all people."
             showAllOnFocus={true}
             renderPill={(item, onRemove) => (
               <div
                 key={item.id}
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium"
               >
                 <div
                   className="w-3 h-3 rounded-full flex-shrink-0"

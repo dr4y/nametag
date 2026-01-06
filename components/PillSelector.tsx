@@ -23,6 +23,7 @@ interface PillSelectorProps<T extends PillItem> {
   renderSuggestion?: (item: T) => ReactNode;
   showAllOnFocus?: boolean;
   isLoading?: boolean;
+  onClearAll?: () => void;
 }
 
 export default function PillSelector<T extends PillItem>({
@@ -40,6 +41,7 @@ export default function PillSelector<T extends PillItem>({
   renderSuggestion,
   showAllOnFocus = false,
   isLoading = false,
+  onClearAll,
 }: PillSelectorProps<T>) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -131,7 +133,7 @@ export default function PillSelector<T extends PillItem>({
   const defaultRenderPill = (item: T, onRemoveClick: () => void) => (
     <div
       key={item.id}
-      className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium"
     >
       {item.color && (
         <div
@@ -192,10 +194,10 @@ export default function PillSelector<T extends PillItem>({
 
       {/* Input box with pills */}
       <div
-        className="min-h-[60px] p-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 transition-colors cursor-text"
+        className="min-h-[42px] p-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus-within:border-blue-500 dark:focus-within:border-blue-400 transition-colors cursor-text"
         onClick={() => inputRef.current?.focus()}
       >
-        <div className="flex flex-wrap gap-2 items-center">
+        <div className="flex flex-wrap gap-1.5 items-center">
           {/* Selected items as pills */}
           {sortedSelectedItems.map((item) =>
             pillRenderer(item, () => handleRemove(item.id))
@@ -227,6 +229,33 @@ export default function PillSelector<T extends PillItem>({
               className="w-full px-2 py-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none disabled:opacity-50"
             />
           </div>
+
+          {/* Clear all button */}
+          {onClearAll && selectedItems.length > 0 && (
+            <button
+              type="button"
+              onClick={onClearAll}
+              onMouseDown={(e) => e.preventDefault()}
+              disabled={isLoading}
+              className="flex-shrink-0 p-1 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50"
+              aria-label="Clear all"
+              title="Clear all"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
