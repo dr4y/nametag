@@ -21,7 +21,7 @@ export const POST = withAuth(async (request, session) => {
     const data: ImportData = validation.data;
 
     // Check if we're importing specific groups
-    const selectedGroupIds = body.groupIds as string[] | undefined;
+    const selectedGroupIds = (body as any)?.groupIds as string[] | undefined;
     let filteredData = data;
 
     if (selectedGroupIds && selectedGroupIds.length > 0) {
