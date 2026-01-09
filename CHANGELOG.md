@@ -6,23 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.10.0](https://github.com/mattogodoy/nametag/compare/v0.9.0...v0.10.0) (2026-01-09)
-
-### Features
-
-* Enable cross-subdomain language cookie sharing ([f0399c9](https://github.com/mattogodoy/nametag/commit/f0399c95734aebfaf1f064ae903828b383f38f26))
+## [0.10.1](https://github.com/mattogodoy/nametag/compare/v0.10.0...v0.10.1) (2026-01-09)
 
 ### Bug Fixes
 
-* Meaningless change to trigger GitHub build ([a1fcf69](https://github.com/mattogodoy/nametag/commit/a1fcf69c2d47c561fba57553f3740b45b2d414bc))
-* Replace any type with explicit cookie options type ([074798d](https://github.com/mattogodoy/nametag/commit/074798d8dcb108a9151cf3f827e56a5abcb2f918))
+* Google OAuth button translations ([b189ca7](https://github.com/mattogodoy/nametag/commit/b189ca747169dd5311a717f6c7b619148aaa3e31))
 
 ### Changelog
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v0.10.1](https://github.com/mattogodoy/nametag/compare/v0.10.0...v0.10.1)
+
+- 🐛 Fix: Google OAuth button translations [`b189ca7`](https://github.com/mattogodoy/nametag/commit/b189ca747169dd5311a717f6c7b619148aaa3e31)
+
 #### [v0.10.0](https://github.com/mattogodoy/nametag/compare/v0.9.0...v0.10.0)
 
+> 9 January 2026
+
+- 🔧 Chore: release v0.10.0 [`e365d55`](https://github.com/mattogodoy/nametag/commit/e365d55211c6a0165a20cc968c3a778adcf63ca6)
 - 🐛 Fix: Replace any type with explicit cookie options type [`074798d`](https://github.com/mattogodoy/nametag/commit/074798d8dcb108a9151cf3f827e56a5abcb2f918)
 - ✨ Feature: Enable cross-subdomain language cookie sharing [`f0399c9`](https://github.com/mattogodoy/nametag/commit/f0399c95734aebfaf1f064ae903828b383f38f26)
 - Added cross-site cookies for language [`b705b59`](https://github.com/mattogodoy/nametag/commit/b705b593321b8d5608fe68c7838f9e23985ec237)
