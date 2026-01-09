@@ -72,7 +72,14 @@ export async function getLocaleFromCookie(): Promise<SupportedLocale | null> {
 export async function setLocaleCookie(locale: SupportedLocale): Promise<void> {
   try {
     const cookieStore = await cookies();
-    const cookieOptions: any = {
+    const cookieOptions: {
+      path: string;
+      maxAge: number;
+      httpOnly: boolean;
+      sameSite: 'lax';
+      domain?: string;
+      secure?: boolean;
+    } = {
       path: '/',
       maxAge: 365 * 24 * 60 * 60, // 1 year
       httpOnly: false, // Allow client-side access
