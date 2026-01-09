@@ -273,4 +273,3 @@ If you find Nametag useful and want to support its development, you can buy me a
 ---
 
 Built with care for people who care about people.
-
