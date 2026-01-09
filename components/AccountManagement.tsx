@@ -15,13 +15,6 @@ interface Group {
   color: string | null;
 }
 
-interface ImportData {
-  version: string | number;
-  groups: Group[];
-  people: unknown[];
-  customRelationshipTypes?: unknown[];
-}
-
 interface AccountManagementProps {
   groups: Group[];
   peopleCount: number;
@@ -492,7 +485,7 @@ export default function AccountManagement({ groups, peopleCount }: AccountManage
                       {importMode === 'groups' && (
                         <div className="pl-6">
                           <div className="space-y-2 mb-3">
-                            {importData.groups.map((group: Group) => (
+                            {importData.groups.map((group) => (
                               <label
                                 key={group.id}
                                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
