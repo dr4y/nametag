@@ -103,14 +103,14 @@ describe('PasswordStrengthIndicator', () => {
 
   describe('Specific Requirements', () => {
     it('should detect minimum length requirement', () => {
-      const { container } = render(<PasswordStrengthIndicator password="Pass1!" />);
+      render(<PasswordStrengthIndicator password="Pass1!" />);
 
       // 6 characters, doesn't meet 8 minimum
       const lengthReq = screen.getByText(/At least 8 characters/i);
       expect(lengthReq.parentElement?.querySelector('.text-muted')).toBeInTheDocument();
 
       // 8 characters, meets minimum
-      const { container: container2 } = render(<PasswordStrengthIndicator password="Pass123!" />);
+      render(<PasswordStrengthIndicator password="Pass123!" />);
       const lengthReq2 = screen.getAllByText(/At least 8 characters/i)[1];
       expect(lengthReq2.parentElement?.querySelector('.text-green-500')).toBeInTheDocument();
     });

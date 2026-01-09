@@ -85,7 +85,7 @@ export default function RegisterPage() {
 
       // Show success message instead of auto-login
       setSuccess(true);
-    } catch (error) {
+    } catch {
       setError('Unable to connect to server. Please check your connection and try again.');
     } finally {
       setIsLoading(false);

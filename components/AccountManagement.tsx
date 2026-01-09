@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import GroupsSelector from './GroupsSelector';
 import { Button } from './ui/Button';
+import { importDataSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 interface Group {
   id: string;
@@ -16,6 +18,9 @@ interface AccountManagementProps {
   groups: Group[];
   peopleCount: number;
 }
+
+type ImportData = z.infer<typeof importDataSchema>;
+type ImportRequestBody = ImportData & { groupIds?: string[] };
 
 export default function AccountManagement({ groups, peopleCount }: AccountManagementProps) {
   const router = useRouter();
@@ -32,7 +37,7 @@ export default function AccountManagement({ groups, peopleCount }: AccountManage
   const [isValidating, setIsValidating] = useState(false);
   const [importMessage, setImportMessage] = useState('');
   const [importFile, setImportFile] = useState<File | null>(null);
-  const [importData, setImportData] = useState<any>(null);
+  const [importData, setImportData] = useState<ImportData | null>(null);
   const [importPreview, setImportPreview] = useState<{
     groups: number;
     people: number;
@@ -167,7 +172,7 @@ export default function AccountManagement({ groups, peopleCount }: AccountManage
 
     try {
       // Build the request body
-      const requestBody: any = { ...importData };
+      const requestBody: ImportRequestBody = { ...importData };
 
       // If importing specific groups, add the groupIds parameter
       if (importMode === 'groups' && selectedImportGroupIds.length > 0) {
@@ -472,7 +477,7 @@ export default function AccountManagement({ groups, peopleCount }: AccountManage
                       {importMode === 'groups' && (
                         <div className="pl-6">
                           <div className="space-y-2 mb-3">
-                            {importData.groups.map((group: any) => (
+                            {importData.groups.map((group) => (
                               <label
                                 key={group.id}
                                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
