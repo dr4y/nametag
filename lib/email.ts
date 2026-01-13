@@ -4,9 +4,27 @@ import { escapeHtml } from "./sanitize";
 import { getTranslationsForLocale, type SupportedLocale } from "./i18n-utils";
 import { getUserLocale } from "./locale";
 
-const resend = new Resend(env.RESEND_API_KEY);
+// Lazy initialization of Resend client
+let resendClient: Resend | null = null;
 
-const EMAIL_DOMAIN = env.EMAIL_DOMAIN;
+function getResendClient(): Resend | null {
+  if (!isEmailConfigured()) {
+    return null;
+  }
+  if (!resendClient) {
+    resendClient = new Resend(env.RESEND_API_KEY);
+  }
+  return resendClient;
+}
+
+/**
+ * Check if email is properly configured
+ * Returns true only if both RESEND_API_KEY and EMAIL_DOMAIN are set
+ */
+export function isEmailConfigured(): boolean {
+  return !!(env.RESEND_API_KEY && env.EMAIL_DOMAIN);
+}
+
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://nametag.one';
 
 // Brand colors matching the app
@@ -24,10 +42,17 @@ const COLORS = {
 };
 
 // Different from addresses for different email types
+// These are computed dynamically to handle cases where EMAIL_DOMAIN is not set
 export const fromAddresses = {
-  accounts: `Nametag Accounts <accounts@${EMAIL_DOMAIN}>`,
-  reminders: `Nametag Reminders <reminders@${EMAIL_DOMAIN}>`,
-  default: `Nametag <hello@${EMAIL_DOMAIN}>`,
+  get accounts() {
+    return env.EMAIL_DOMAIN ? `Nametag Accounts <accounts@${env.EMAIL_DOMAIN}>` : 'noreply@example.com';
+  },
+  get reminders() {
+    return env.EMAIL_DOMAIN ? `Nametag Reminders <reminders@${env.EMAIL_DOMAIN}>` : 'noreply@example.com';
+  },
+  get default() {
+    return env.EMAIL_DOMAIN ? `Nametag <hello@${env.EMAIL_DOMAIN}>` : 'noreply@example.com';
+  },
 };
 
 export type SendEmailOptions = {
@@ -39,8 +64,20 @@ export type SendEmailOptions = {
 };
 
 export async function sendEmail({ to, subject, html, text, from = 'default' }: SendEmailOptions) {
+  // Check if email is configured
+  if (!isEmailConfigured()) {
+    console.warn("Email not configured - skipping email send", { to, subject });
+    return { success: true, skipped: true, message: "Email not configured" };
+  }
+
+  const client = getResendClient();
+  if (!client) {
+    console.warn("Unable to get Resend client - skipping email send", { to, subject });
+    return { success: true, skipped: true, message: "Email client not available" };
+  }
+
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await client.emails.send({
       from: fromAddresses[from],
       to,
       subject,

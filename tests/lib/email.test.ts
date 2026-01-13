@@ -155,6 +155,13 @@ describe('email', () => {
     });
   });
 
+  describe('isEmailConfigured', () => {
+    it('should return true when email is configured', async () => {
+      const { isEmailConfigured } = await import('../../lib/email');
+      expect(isEmailConfigured()).toBe(true);
+    });
+  });
+
   describe('emailTemplates', () => {
     describe('accountVerification', () => {
       it('should generate verification email', async () => {
@@ -173,7 +180,7 @@ describe('email', () => {
       it('should generate reminder email', async () => {
         const { emailTemplates } = await import('../../lib/email');
 
-        const template = await emailTemplates.importantDateReminder('John Doe', 'Birthday', 'March 15');
+        const template = await emailTemplates.importantDateReminder('John Doe', 'Birthday', 'March 15', 'https://example.com/unsubscribe');
 
         expect(template.subject).toContain('John Doe');
         expect(template.subject).toContain('Birthday');
@@ -188,7 +195,7 @@ describe('email', () => {
       it('should generate contact reminder with last contact date', async () => {
         const { emailTemplates } = await import('../../lib/email');
 
-        const template = await emailTemplates.contactReminder('Jane Smith', 'January 1, 2024', '2 weeks');
+        const template = await emailTemplates.contactReminder('Jane Smith', 'January 1, 2024', '2 weeks', 'https://example.com/unsubscribe');
 
         expect(template.subject).toContain('Jane Smith');
         expect(template.html).toContain('Jane Smith');
@@ -200,7 +207,7 @@ describe('email', () => {
       it('should handle null last contact date', async () => {
         const { emailTemplates } = await import('../../lib/email');
 
-        const template = await emailTemplates.contactReminder('Jane Smith', null, '1 month');
+        const template = await emailTemplates.contactReminder('Jane Smith', null, '1 month', 'https://example.com/unsubscribe');
 
         expect(template.html).toContain('Jane Smith');
         expect(template.html).not.toContain('last contact:');
