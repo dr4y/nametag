@@ -2,7 +2,7 @@
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
 
-Nametag is a personal relationships manager that helps you remember the people in your life and hoy they're connected. Track birthdays, contact information, how people are connected, and visualize your network as an interactive graph.
+Nametag is a personal relationships manager that helps you remember the people in your life and how they're connected. Track birthdays, contact information, how people are connected, and visualize your network as an interactive graph.
 
 ![Dashboard](docs/screenshots/sc1.png)
 *Dashboard with network overview and statistics*
