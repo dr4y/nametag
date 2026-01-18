@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendEmail, emailTemplates } from '@/lib/email';
 import { formatFullName } from '@/lib/nameUtils';
-import { env } from '@/lib/env';
+import { env, getAppUrl } from '@/lib/env';
 import { handleApiError } from '@/lib/api-utils';
 import { logger, securityLogger } from '@/lib/logger';
 import { getClientIp } from '@/lib/api-utils';
@@ -84,8 +84,7 @@ export async function GET(request: Request) {
           entityId: importantDate.id,
         });
 
-        const baseUrl = env.NEXT_PUBLIC_APP_URL || 'https://nametag.one';
-        const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${unsubscribeToken}`;
+        const unsubscribeUrl = `${getAppUrl()}/unsubscribe?token=${unsubscribeToken}`;
 
         const template = await emailTemplates.importantDateReminder(
           personName,
@@ -159,8 +158,7 @@ export async function GET(request: Request) {
           entityId: person.id,
         });
 
-        const baseUrl = env.NEXT_PUBLIC_APP_URL || 'https://nametag.one';
-        const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${unsubscribeToken}`;
+        const unsubscribeUrl = `${getAppUrl()}/unsubscribe?token=${unsubscribeToken}`;
 
         const template = await emailTemplates.contactReminder(
           personName,

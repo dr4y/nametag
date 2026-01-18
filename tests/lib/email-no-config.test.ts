@@ -1,11 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock the env module with missing email configuration
+const mockEnv = {
+  RESEND_API_KEY: undefined,
+  EMAIL_DOMAIN: undefined,
+  NEXTAUTH_URL: 'http://localhost:3000',
+  NEXT_PUBLIC_APP_URL: undefined,
+};
+
 vi.mock('../../lib/env', () => ({
-  env: {
-    RESEND_API_KEY: undefined,
-    EMAIL_DOMAIN: undefined,
-  },
+  env: mockEnv,
+  getEnv: () => mockEnv,
+  getAppUrl: () => mockEnv.NEXT_PUBLIC_APP_URL || mockEnv.NEXTAUTH_URL,
 }));
 
 // Mock Resend - it should never be called when config is missing

@@ -4,13 +4,21 @@ Thanks for your interest in contributing! This guide will help you get set up an
 
 ## Development Setup
 
-### Prerequisites
+Nametag supports two development environments. Choose the one that works best for you:
 
-- Node.js 20+
-- Docker and Docker Compose
-- Git
+- **Dev Container** (Option A) - Easiest for new contributors, one-click setup
+- **Local Development** (Option B) - Best for daily development, faster iteration
 
-### Getting Started
+### Option A: Dev Container (Recommended for New Contributors)
+
+Perfect for getting started quickly with zero configuration. Works on any OS and even in GitHub Codespaces.
+
+**Prerequisites:**
+- [VS Code](https://code.visualstudio.com/)
+- [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+- Docker Desktop (running)
+
+**Setup:**
 
 1. Fork and clone the repository:
 ```bash
@@ -18,63 +26,140 @@ git clone https://github.com/YOUR_USERNAME/nametag.git
 cd nametag
 ```
 
-2. Copy the environment file and fill in required values:
+2. Open in VS Code:
+```bash
+code .
+```
+
+3. When prompted, click **"Reopen in Container"** (or press F1 → "Dev Containers: Reopen in Container")
+
+4. Wait for the container to build and setup to complete (this happens automatically):
+   - Installs Node.js dependencies
+   - Generates Prisma client
+   - Runs database migrations
+   - Seeds the database with demo data
+
+5. Start the dev server:
+```bash
+npm run dev
+```
+
+6. Access the app at `http://localhost:3000`
+
+**Demo credentials:**
+- Email: `demo@nametag.one`
+- Password: `password123`
+
+**Benefits:**
+- Consistent environment across all developers
+- No local Node.js installation required
+- Works on Windows, macOS, and Linux identically
+- Can develop in browser via GitHub Codespaces
+- All tools and extensions pre-configured
+
+### Option B: Local Development (Best for Daily Development)
+
+Faster iteration and better debugging experience. Requires Node.js installed locally, but only runs database services in Docker.
+
+**Prerequisites:**
+- Node.js 20+
+- Docker and Docker Compose
+- Git
+
+**Setup:**
+
+1. Fork and clone the repository:
+```bash
+git clone https://github.com/YOUR_USERNAME/nametag.git
+cd nametag
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Copy the environment file:
 ```bash
 cp .env.example .env
 ```
 
-At minimum, you need to set:
+Edit `.env` and set at minimum:
 - `NEXTAUTH_SECRET` - Generate with `openssl rand -base64 32`
-- `DB_PASSWORD` - Any secure password for local development
-- `REDIS_PASSWORD` - Any secure password for local development
 - `CRON_SECRET` - Generate with `openssl rand -base64 16`
-- `RESEND_API_KEY` - Get a free API key at [resend.com](https://resend.com) (optional for basic development)
-- `EMAIL_DOMAIN` - Your test domain (optional for basic development)
 
-3. Start the development environment:
+The default values for `DATABASE_URL` and `REDIS_URL` will work with the Docker services.
+
+4. Start database services only:
 ```bash
-docker-compose up
+docker-compose -f docker-compose.services.yml up -d
 ```
 
 This starts:
 - PostgreSQL database on port 5432
 - Redis on port 6379
-- Next.js app on port 3000 with hot-reload
 
-4. Set up the database (in a new terminal):
+5. Set up the database:
 ```bash
 ./scripts/setup-db.sh
 ```
 
 This runs migrations, generates Prisma client, and seeds the database with demo data.
 
-5. Access the app at `http://localhost:3000`
-
-Demo credentials:
-- Email: `demo@nametag.one`
-- Password: `password123`
-
-### Alternative: Local Development (without Docker)
-
-If you prefer not to use Docker:
-
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Set up a local PostgreSQL database and update `DATABASE_URL` in `.env`
-
-3. Run migrations:
-```bash
-npx prisma migrate dev
-npx prisma db seed
-```
-
-4. Start the dev server:
+6. Start the dev server:
 ```bash
 npm run dev
 ```
+
+7. Access the app at `http://localhost:3000`
+
+**Demo credentials:**
+- Email: `demo@nametag.one`
+- Password: `password123`
+
+**Benefits:**
+- Native performance (no Docker overhead for Node.js)
+- Instant hot-reload
+- Better debugging with native Node.js
+- Full control over the development environment
+- Faster test execution
+
+**Common commands:**
+```bash
+# Stop database services
+docker-compose -f docker-compose.services.yml down
+
+# Start services
+docker-compose -f docker-compose.services.yml up -d
+
+# View database logs
+docker-compose -f docker-compose.services.yml logs -f db
+
+# Reset database
+npx prisma migrate reset
+```
+
+### Troubleshooting
+
+**Dev Container issues:**
+- Ensure Docker Desktop is running
+- Try "Dev Containers: Rebuild Container" from command palette (F1)
+- Check that ports 3000, 5432, and 6379 are not already in use
+
+**Local Development issues:**
+- Verify Node.js version: `node --version` (should be 20+)
+- Ensure Docker services are running: `docker-compose -f docker-compose.services.yml ps`
+- Check database connection: `npx prisma db execute --stdin <<< "SELECT 1"`
+- Clear node_modules and reinstall: `rm -rf node_modules && npm install`
+
+**Database connection errors:**
+- Verify services are healthy: `docker ps`
+- Check `.env` file has correct `DATABASE_URL` and `REDIS_URL`
+- Try restarting services: `docker-compose -f docker-compose.services.yml restart`
+
+**Port conflicts:**
+- Check what's using a port: `lsof -i :3000` (or :5432, :6379)
+- Change port in `.env` or stop conflicting service
 
 ## Development Workflow
 
@@ -136,11 +221,18 @@ npm run build
 
 ### Debugging
 
-- Check Docker logs: `docker-compose logs -f app`
-- Check database logs: `docker-compose logs -f db`
+**Dev Container:**
+- View terminal output in VS Code
+- Use VS Code's built-in debugger
 - Use Prisma Studio to inspect data: `npx prisma studio`
-- Add console.logs or use your IDE's debugger
-- Check the browser console for frontend issues
+- Check browser console for frontend issues
+
+**Local Development:**
+- Check database logs: `docker-compose -f docker-compose.services.yml logs -f db`
+- Use your IDE's Node.js debugger
+- Use Prisma Studio to inspect data: `npx prisma studio`
+- Add console.logs or breakpoints
+- Check browser console for frontend issues
 
 ### Commit Message Format
 

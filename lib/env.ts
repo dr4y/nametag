@@ -6,8 +6,13 @@ import { z } from 'zod';
  */
 
 const envSchema = z.object({
-  // Database
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  // Database - either DATABASE_URL or individual DB_* variables
+  DATABASE_URL: z.string().min(1).optional(),
+  DB_HOST: z.string().min(1).optional(),
+  DB_PORT: z.coerce.number().min(1).max(65535).optional(),
+  DB_NAME: z.string().min(1).optional(),
+  DB_USER: z.string().min(1).optional(),
+  DB_PASSWORD: z.string().optional(), // Optional to allow empty passwords
 
   // NextAuth
   NEXTAUTH_URL: z.string().url('NEXTAUTH_URL must be a valid URL'),
@@ -50,9 +55,19 @@ const envSchema = z.object({
   // Disable registration after first user (useful for public-facing self-hosted instances)
   DISABLE_REGISTRATION: z.coerce.boolean().default(false),
 
-  // Application URL for generating links in emails
+  // Application URL for generating links in emails (optional, defaults to NEXTAUTH_URL)
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
 });
+
+/**
+ * Get the application URL for generating links.
+ * Falls back to NEXTAUTH_URL if NEXT_PUBLIC_APP_URL is not set.
+ * This allows users to set just NEXTAUTH_URL for most deployments.
+ */
+export function getAppUrl(): string {
+  const env = getEnv();
+  return env.NEXT_PUBLIC_APP_URL || env.NEXTAUTH_URL;
+}
 
 export type Env = z.infer<typeof envSchema>;
 
@@ -73,6 +88,31 @@ function validateEnv(): Env {
     console.error('\nPlease check your .env file.\n');
 
     throw new Error('Invalid environment configuration');
+  }
+
+  // Database URL validation and construction
+  if (!result.data.DATABASE_URL) {
+    // If DATABASE_URL is not set, try to construct it from DB_* variables
+    const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD } = result.data;
+    const requiredDbVars = { DB_HOST, DB_PORT, DB_NAME, DB_USER };
+    const missingVars = Object.entries(requiredDbVars)
+      .filter(([_, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingVars.length > 0) {
+      console.error('\n❌ Invalid environment variables:\n');
+      console.error('  - Database configuration is incomplete.');
+      console.error('\n  You must provide either:');
+      console.error('    1. DATABASE_URL (connection string), OR');
+      console.error('    2. All of: DB_HOST, DB_PORT, DB_NAME, DB_USER (and optionally DB_PASSWORD)');
+      console.error(`\n  Missing: ${missingVars.join(', ')}`);
+      console.error('\nPlease check your .env file.\n');
+      throw new Error('Invalid environment configuration');
+    }
+
+    // Construct DATABASE_URL from individual variables
+    const password = DB_PASSWORD ? `:${DB_PASSWORD}` : '';
+    result.data.DATABASE_URL = `postgresql://${DB_USER}${password}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
   }
 
   // Additional validation: Email and OAuth settings required in SaaS mode

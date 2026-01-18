@@ -10,6 +10,7 @@ import { logger } from '@/lib/logger';
 import { createFreeSubscription } from '@/lib/billing';
 import { createPreloadedRelationshipTypes } from '@/lib/relationship-types';
 import { isFeatureEnabled } from '@/lib/features';
+import { getAppUrl } from '@/lib/env';
 
 const TOKEN_EXPIRY_HOURS = 24;
 
@@ -92,8 +93,7 @@ export async function POST(request: Request) {
 
     // Send verification email only in SaaS mode
     if (requireEmailVerification) {
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-      const verificationUrl = `${baseUrl}/verify-email?token=${verifyToken}`;
+      const verificationUrl = `${getAppUrl()}/verify-email?token=${verifyToken}`;
       const { subject, html, text } = await emailTemplates.accountVerification(verificationUrl);
 
       await sendEmail({

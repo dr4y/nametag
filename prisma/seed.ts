@@ -1,14 +1,14 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
+// Load environment variables FIRST (before any other imports)
+import { config } from 'dotenv';
+config();
+
+// Now import everything else
 import * as bcrypt from 'bcryptjs';
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-
-const prisma = new PrismaClient({ adapter });
-
 async function main() {
+  // Dynamically import prisma after env is loaded
+  const { withDeleted } = await import('../lib/prisma');
+  const prisma = withDeleted();
   console.log('🌱 Starting database seed...');
 
   // Clear existing data
@@ -413,13 +413,12 @@ async function main() {
   console.log('\nDemo credentials:');
   console.log('Email: demo@nametag.one');
   console.log('Password: password123');
+
+  // Disconnect after successful seed
+  await prisma.$disconnect();
 }
 
-main()
-  .catch((e) => {
-    console.error('Error seeding database:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main().catch((e) => {
+  console.error('Error seeding database:', e);
+  process.exit(1);
+});

@@ -125,7 +125,7 @@ echo ""
 
 # Step 1: Stop application
 echo "1. Stopping application..."
-docker-compose -f docker-compose.prod.yml stop app cron 2>/dev/null || true
+docker-compose stop app cron 2>/dev/null || true
 echo -e "${GREEN}   ✅ Application stopped${NC}"
 
 # Step 2: Drop existing database
@@ -154,7 +154,7 @@ echo -e "${GREEN}   ✅ Restored user count: $RESTORED_USER_COUNT${NC}"
 
 # Step 6: Restart application
 echo "6. Restarting application..."
-docker-compose -f docker-compose.prod.yml start app cron 2>/dev/null || docker-compose -f docker-compose.prod.yml up -d app cron
+docker-compose start app cron 2>/dev/null || docker-compose up -d app cron
 sleep 3
 echo -e "${GREEN}   ✅ Application restarted${NC}"
 

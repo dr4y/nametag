@@ -35,7 +35,7 @@ fi
 # Check if Redis container is running
 if ! docker ps | grep -q nametag-redis-prod; then
     echo -e "${RED}❌ Error: Redis container (nametag-redis-prod) is not running${NC}"
-    echo "   Start it with: docker-compose -f docker-compose.prod.yml up -d redis"
+    echo "   Start it with: docker-compose up -d redis"
     exit 1
 fi
 

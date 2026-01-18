@@ -325,7 +325,6 @@
   "people": {
     "title": "Personas",
     "addPerson": "Añadir Persona",
-    "editPerson": "Editar Persona",
     "deletePerson": "Eliminar Persona",
     "viewPerson": "Ver Persona",
     "fullName": "Nombre Completo",
@@ -364,8 +363,6 @@
     "relationshipNetwork": "Red de Relaciones",
     "graphHelp": "Haz clic en los nodos para navegar • Arrastra para reposicionar • Desplázate para hacer zoom",
     "you": "Tú",
-    "year": "año",
-    "years": "años",
     "ago": "hace",
     "remindOnce": "Recordar una vez",
     "remindEvery": "Recordar cada {interval} {unit}",

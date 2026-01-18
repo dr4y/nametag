@@ -90,18 +90,11 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: nametag
+      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: nametag_db
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - redis_data:/data
 
   app:
     image: ghcr.io/mattogodoy/nametag:latest
@@ -110,12 +103,8 @@ services:
       - "3000:3000"
     env_file:
       - .env
-    environment:
-      - DATABASE_URL=postgresql://nametag:${DB_PASSWORD}@db:5432/nametag_db
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
     depends_on:
       - db
-      - redis
 
   cron:
     image: alpine:3.19
@@ -123,6 +112,7 @@ services:
     command: >
       sh -c "
         echo '0 8 * * * wget -q -O - --header=\"Authorization: Bearer '\"$$CRON_SECRET\"'\" http://app:3000/api/cron/send-reminders > /proc/1/fd/1 2>&1' > /etc/crontabs/root &&
+        echo '0 3 * * * wget -q -O - --header=\"Authorization: Bearer '\"$$CRON_SECRET\"'\" http://app:3000/api/cron/purge-deleted > /proc/1/fd/1 2>&1' >> /etc/crontabs/root &&
         crond -f -l 2
       "
     environment:
@@ -132,22 +122,21 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
 ```
 
 3. Create a `.env` file with required variables:
 ```bash
 # Generate secrets with: openssl rand -base64 32
 
-# Database
+# Database connection
+DB_HOST=db
+DB_PORT=5432
+DB_NAME=nametag_db
+DB_USER=nametag
 DB_PASSWORD=your-secure-database-password
 
-# Redis
-REDIS_PASSWORD=your-secure-redis-password
-
-# Application URLs
+# Application URL
 NEXTAUTH_URL=http://localhost:3000
-NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # NextAuth (must be at least 32 characters)
 NEXTAUTH_SECRET=your-nextauth-secret-minimum-32-characters
@@ -190,13 +179,18 @@ The database will be automatically set up on first run.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host:5432/db` |
-| `NEXTAUTH_URL` | Full URL where your app is hosted | `https://yourdomain.com` |
-| `NEXT_PUBLIC_APP_URL` | Public URL for redirects | `https://yourdomain.com` |
+| `DB_HOST` | PostgreSQL server hostname | `db` or `localhost` |
+| `DB_PORT` | PostgreSQL server port | `5432` |
+| `DB_NAME` | PostgreSQL database name | `nametag_db` |
+| `DB_USER` | PostgreSQL username | `nametag` |
+| `DB_PASSWORD` | PostgreSQL password | `your-secure-password` |
+| `NEXTAUTH_URL` | Application URL (for auth, emails, redirects) | `https://yourdomain.com` |
 | `NEXTAUTH_SECRET` | Secret for JWT encryption (min 32 chars) | Generate with `openssl rand -base64 32` |
 | `CRON_SECRET` | Secret for cron job authentication | Generate with `openssl rand -base64 16` |
-| `REDIS_URL` | Redis connection URL (required for production, optional for dev) | `redis://:password@redis:6379` |
+| `REDIS_URL` | Redis connection URL (required for SaaS mode, optional otherwise) | `redis://:password@redis:6379` |
 | `REDIS_PASSWORD` | Redis authentication password | Generate with `openssl rand -base64 32` |
+
+**Advanced database configuration:** Instead of using `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`, you can provide a full connection string with `DATABASE_URL=postgresql://user:pass@host:5432/db`. If `DATABASE_URL` is set, it takes precedence over the individual variables.
 
 #### Optional
 
@@ -284,25 +278,33 @@ Most SMTP servers restrict which addresses you can send from:
 
 ### Redis Setup
 
-Redis is used for rate limiting authentication endpoints (login, registration, password resets) to protect against brute force attacks.
+Redis is used for rate limiting authentication endpoints to protect against brute force attacks.
 
-**For Production Deployments:**
+**For SaaS Mode (nametag.one):**
 - Redis is **required** and the application will fail to start without it
-- Protects against distributed attacks when running multiple app instances
-- Ensures rate limits persist across server restarts
+- Ensures consistent rate limiting across multiple server instances
+- Persists rate limits across server restarts
 
-**For Development/Testing:**
-- Redis is **optional** - the app will use in-memory rate limiting if Redis isn't configured
-- In-memory fallback works fine for local development
-- Limitations: Resets on server restart and doesn't work across multiple instances
+**For Self-Hosted Production:**
+- Redis is **optional but recommended**
+- Without Redis: Falls back to in-memory rate limiting
+- In-memory limitations: Resets on restart, doesn't work across multiple instances
+- For single-server deployments, in-memory works fine
 
-**To run without Redis in development:**
-1. Simply omit the `REDIS_URL` environment variable from your `.env` file
-2. Remove or comment out the Redis service from `docker-compose.yml`
-3. The app will log a warning and continue with in-memory rate limiting
+**For Development:**
+- Redis is **optional**
+- In-memory fallback works perfectly for local development
+
+**To run without Redis:**
+1. Simply omit `REDIS_URL` from your `.env` file
+2. Remove or comment out Redis service from your compose file
+3. The app will log a warning and use in-memory rate limiting
 
 **To enable Redis:**
-Follow the Quick Start guide above which includes Redis configuration. The Redis service is already included in the example `docker-compose.yml`.
+Redis is included in all deployment configurations:
+- **Dev Container**: `.devcontainer/docker-compose.yml`
+- **Local Development**: `docker-compose.services.yml`
+- **Production**: `docker-compose.yml`
 
 ### Restricting Registration (Optional)
 
@@ -355,6 +357,32 @@ server {
 - **Graphs**: D3.js for network visualization
 - **Auth**: NextAuth.js
 - **Email**: Resend or SMTP (nodemailer)
+
+## Contributing & Development
+
+Want to contribute? We support two development environments:
+
+### Option 1: Dev Container (Easiest for new contributors)
+Perfect for getting started quickly with zero configuration.
+
+1. Install [VS Code](https://code.visualstudio.com/) and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Clone the repository
+3. Open in VS Code and click "Reopen in Container" when prompted
+4. Wait for automatic setup to complete
+5. Start developing! Run `npm run dev` and open `http://localhost:3000`
+
+### Option 2: Local Development (Best for daily development)
+Faster iteration and better debugging experience.
+
+1. **Prerequisites:** Node.js 20+ and Docker
+2. Clone the repository
+3. Install dependencies: `npm install`
+4. Start database services: `docker-compose -f docker-compose.services.yml up -d`
+5. Set up database: `./scripts/setup-db.sh`
+6. Start dev server: `npm run dev`
+7. Open `http://localhost:3000`
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup instructions, code guidelines, and how to submit pull requests.
 
 ## Contributing
 

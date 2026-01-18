@@ -1,11 +1,13 @@
 import Redis from 'ioredis';
 import { logger } from './logger';
+import { isSaasMode } from './features';
 
 /**
  * Redis client configuration
- * 
+ *
  * In development: Falls back to in-memory if Redis not available
- * In production: Requires Redis (will throw error if not configured)
+ * In production (self-hosted): Falls back to in-memory if Redis not available
+ * In SaaS mode: Requires Redis (will throw error if not configured)
  */
 
 let redis: Redis | null = null;
@@ -16,15 +18,15 @@ let connectionPromise: Promise<void> | null = null;
  * Initialize Redis client
  */
 function createRedisClient(): Redis | null {
-  // If no Redis URL configured and in development, skip Redis
-  if (!process.env.REDIS_URL && process.env.NODE_ENV !== 'production') {
-    logger.warn('Redis URL not configured. Using in-memory rate limiting (not recommended for production)');
+  // If no Redis URL configured and not in SaaS mode, skip Redis
+  if (!process.env.REDIS_URL && !isSaasMode()) {
+    logger.warn('Redis URL not configured. Using in-memory rate limiting (not recommended for multi-instance deployments)');
     return null;
   }
 
-  // In production, Redis is required
-  if (!process.env.REDIS_URL && process.env.NODE_ENV === 'production') {
-    throw new Error('REDIS_URL is required in production for distributed rate limiting');
+  // In SaaS mode, Redis is required
+  if (!process.env.REDIS_URL && isSaasMode()) {
+    throw new Error('REDIS_URL is required in SaaS mode for distributed rate limiting');
   }
 
   try {
@@ -65,12 +67,12 @@ function createRedisClient(): Redis | null {
     return client;
   } catch (error) {
     logger.error('Failed to create Redis client', {}, error as Error);
-    
-    // In production, fail fast
-    if (process.env.NODE_ENV === 'production') {
+
+    // In SaaS mode, fail fast
+    if (isSaasMode()) {
       throw error;
     }
-    
+
     return null;
   }
 }
@@ -122,9 +124,9 @@ export async function initRedis(): Promise<void> {
       clearTimeout(timeout);
       redis?.off('connect', onConnect);
       isRedisAvailable = false;
-      
-      if (process.env.NODE_ENV === 'production') {
-        logger.error('Redis connection failed in production', {}, err);
+
+      if (isSaasMode()) {
+        logger.error('Redis connection failed in SaaS mode', {}, err);
         reject(err);
       } else {
         logger.warn('Redis connection failed, continuing without Redis');

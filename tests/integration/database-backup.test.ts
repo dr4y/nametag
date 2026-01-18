@@ -14,7 +14,7 @@ import path from 'path';
  * 
  * Requirements:
  * - Docker and Docker Compose installed
- * - Production environment configured (docker-compose.prod.yml)
+ * - Production environment configured (docker-compose.yml)
  * - Database must be running
  */
 
@@ -226,7 +226,7 @@ describe.skip('Database Backup & Restore', () => {
 
         expect(output).toContain('nametag-backup');
       } catch (error) {
-        console.warn('Backup container not running. Start with: docker-compose -f docker-compose.prod.yml up -d');
+        console.warn('Backup container not running. Start with: docker-compose up -d');
         throw error;
       }
     });
@@ -366,10 +366,10 @@ describe.skip('Database Restore Procedures', () => {
 
 describe.skip('Backup Configuration', () => {
   it('should have correct backup retention settings', () => {
-    const composeFile = path.join(process.cwd(), 'docker-compose.prod.yml');
-    
+    const composeFile = path.join(process.cwd(), 'docker-compose.yml');
+
     if (!fs.existsSync(composeFile)) {
-      console.warn('docker-compose.prod.yml not found');
+      console.warn('docker-compose.yml not found');
       return;
     }
 
