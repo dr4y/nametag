@@ -6,19 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.15.1](https://github.com/mattogodoy/nametag/compare/v0.15.0...v0.15.1) (2026-01-17)
+## [0.15.2](https://github.com/mattogodoy/nametag/compare/v0.15.1...v0.15.2) (2026-01-19)
 
 ### Bug Fixes
 
-* Redirect to login when email verification is disabled ([27a7cb2](https://github.com/mattogodoy/nametag/commit/27a7cb25d4a7875d46674ddeb184c277694be95e))
+* Mock commit to increase version number. Adding breaking changes notice ([5dbcb98](https://github.com/mattogodoy/nametag/commit/5dbcb981aff934b200407e2e8f5a2a2cbeffb887))
 
 ### Changelog
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v0.15.2](https://github.com/mattogodoy/nametag/compare/v0.15.1...v0.15.2)
+
+- [refactor] Simplify dev environment [`#39`](https://github.com/mattogodoy/nametag/pull/39)
+- ♻️ Refactor: Many quality of life improvements for contributors and self-hosters: [`9db9abd`](https://github.com/mattogodoy/nametag/commit/9db9abd335d4a6cd569bbd2de1a5a39e65028fc0)
+- 🔧 Chore: Some improvements for devcontainers [`09d629e`](https://github.com/mattogodoy/nametag/commit/09d629e0149ab50868ac7069314e69ddecb433d6)
+- 🔧 Chore: Update roadmap and some linting in README [`6f836d5`](https://github.com/mattogodoy/nametag/commit/6f836d5f560da4a9667cb406556f5f388ab80818)
+- 🔧 Chore: Ensure the release is only published after the Docker builds succeed [`b322a63`](https://github.com/mattogodoy/nametag/commit/b322a63d5fe79ff82cb771142722cc55ae3d04a7)
+- 🔧 Chore: Improved documentation about Redis in the README file. [`7afdc49`](https://github.com/mattogodoy/nametag/commit/7afdc4911a85e4303444a58ed45684e0ed9e1e9b)
+- 🔧 Chore: Adjusted roadmap priorities [`b714ed9`](https://github.com/mattogodoy/nametag/commit/b714ed9f9a5e63c93875fde1a07b9ed1db1e7621)
+- 🐛 Fix: Mock commit to increase version number. Adding breaking changes notice [`5dbcb98`](https://github.com/mattogodoy/nametag/commit/5dbcb981aff934b200407e2e8f5a2a2cbeffb887)
+
 #### [v0.15.1](https://github.com/mattogodoy/nametag/compare/v0.15.0...v0.15.1)
 
+> 17 January 2026
+
 - 🔧 Chore: Added Roadmap section to the README file. [`394ddda`](https://github.com/mattogodoy/nametag/commit/394ddda85640b1b2ac51a4fdeda82cd6a471c034)
+- 🔧 Chore: release v0.15.1 [`3790dda`](https://github.com/mattogodoy/nametag/commit/3790ddaa3f22a883e38462241a51d406c8f5e38a)
 - 🐛 Fix: Redirect to login when email verification is disabled [`27a7cb2`](https://github.com/mattogodoy/nametag/commit/27a7cb25d4a7875d46674ddeb184c277694be95e)
 
 #### [v0.15.0](https://github.com/mattogodoy/nametag/compare/v0.14.1...v0.15.0)
