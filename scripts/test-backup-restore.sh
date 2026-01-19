@@ -54,7 +54,7 @@ else
     echo -e "${RED}❌ Not running${NC}"
     echo ""
     echo -e "${YELLOW}Please start the database:${NC}"
-    echo "  docker-compose -f docker-compose.prod.yml up -d db"
+    echo "  docker-compose up -d db"
     exit 1
 fi
 

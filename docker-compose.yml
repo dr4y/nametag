@@ -1,28 +1,31 @@
+# Production Docker Compose Configuration
+# Use this for production and self-hosted deployments with proper secrets management
+
 services:
   db:
     image: postgres:16-alpine
     container_name: nametag-db
-    restart: unless-stopped
+    restart: always
     environment:
-      POSTGRES_USER: ${DB_USER:-nametag}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password required}
-      POSTGRES_DB: ${DB_NAME:-nametag_db}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [CMD-SHELL, "pg_isready -U ${DB_USER:-nametag} -d ${DB_NAME:-nametag_db}"]
+      test: [CMD-SHELL, "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - nametag-network
 
-  redis:
+  redis: # Optional. Comment out to disable Redis. See README.md for more details.
     image: redis:7-alpine
     container_name: nametag-redis
-    restart: unless-stopped
+    restart: always
     command: redis-server --requirepass ${REDIS_PASSWORD:?Redis password required}
     ports:
       - "${REDIS_PORT:-6379}:6379"
@@ -37,28 +40,17 @@ services:
       - nametag-network
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/mattogodoy/nametag:latest
     container_name: nametag-app
     restart: unless-stopped
     ports:
       - 3000:3000
     env_file:
       - .env
-    environment:
-      # Override URLs to use Docker service names instead of localhost
-      # (.env uses 'localhost' for local dev, Docker needs 'db' and 'redis')
-      - DATABASE_URL=${DATABASE_URL:-postgresql://${DB_USER:-nametag}:${DB_PASSWORD}@db:5432/${DB_NAME:-nametag_db}}
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
-    volumes:
-      # Mount source code for hot-reload
-      - .:/app
-      - /app/node_modules
     depends_on:
       db:
         condition: service_healthy
-      redis:
+      redis:  # Optional. Comment out to disable Redis. See README.md for more details.
         condition: service_healthy
     healthcheck:
       test: [CMD, wget, -q, --spider, http://localhost:3000/api/health]
@@ -66,14 +58,37 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    # Note: Database initialization and migrations are handled by docker-entrypoint.sh
+    networks:
+      - nametag-network
+      - proxy
+
+  # Database backup service
+  backup:
+    image: prodrigestivill/postgres-backup-local
+    container_name: nametag-backup
+    restart: always
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=8080
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      - db
     networks:
       - nametag-network
 
+  # Cron service for scheduled jobs
   cron:
     image: alpine:3.19
     container_name: nametag-cron
-    restart: unless-stopped
+    restart: always
     environment:
       - CRON_SECRET=${CRON_SECRET}
     depends_on:
@@ -81,6 +96,7 @@ services:
     command: >
       sh -c "
         echo '0 8 * * * wget -q -O - --header=\"Authorization: Bearer '\"$$CRON_SECRET\"'\" http://app:3000/api/cron/send-reminders > /proc/1/fd/1 2>&1' > /etc/crontabs/root &&
+        echo '0 3 * * * wget -q -O - --header=\"Authorization: Bearer '\"$$CRON_SECRET\"'\" http://app:3000/api/cron/purge-deleted > /proc/1/fd/1 2>&1' >> /etc/crontabs/root &&
         crond -f -l 2
       "
     networks:
@@ -88,9 +104,13 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
+    driver: local
+  redis_data: # Optional. Comment out to disable Redis. See README.md for more details.
+    driver: local
 
 networks:
   nametag-network:
     external: true
     name: nametag-network
+  proxy: # for reverse proxy (e.g., Nginx Proxy Manager) to access the app without exposing ports to the outside world
+    external: true

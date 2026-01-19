@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { sendEmail, emailTemplates } from '@/lib/email';
 import { updateProfileSchema, validateRequest } from '@/lib/validations';
 import { apiResponse, handleApiError, parseRequestBody, withAuth } from '@/lib/api-utils';
+import { getAppUrl } from '@/lib/env';
 
 const TOKEN_EXPIRY_HOURS = 24;
 
@@ -59,8 +60,7 @@ export const PUT = withAuth(async (request, session) => {
       });
 
       // Send verification email to new address
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-      const verificationUrl = `${baseUrl}/verify-email?token=${verifyToken}`;
+      const verificationUrl = `${getAppUrl()}/verify-email?token=${verifyToken}`;
       const { subject, html, text } = await emailTemplates.accountVerification(verificationUrl);
 
       await sendEmail({

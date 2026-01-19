@@ -44,6 +44,10 @@ PRODUCTION_SECRETS.txt
 # Claude Code local settings
 .claude/settings.local.json
 
+# Dev Container local overrides
+.devcontainer/devcontainer.local.json
+.devcontainer/.env
+
 # vercel
 .vercel
 

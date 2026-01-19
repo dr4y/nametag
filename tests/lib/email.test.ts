@@ -2,13 +2,19 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock the env module before importing email
 // Test with Resend configured (SMTP not configured)
+const mockEnv = {
+  RESEND_API_KEY: 'test-resend-api-key',
+  EMAIL_DOMAIN: 'test.example.com',
+  SMTP_HOST: undefined,
+  SMTP_PORT: undefined,
+  NEXTAUTH_URL: 'http://localhost:3000',
+  NEXT_PUBLIC_APP_URL: undefined,
+};
+
 vi.mock('../../lib/env', () => ({
-  env: {
-    RESEND_API_KEY: 'test-resend-api-key',
-    EMAIL_DOMAIN: 'test.example.com',
-    SMTP_HOST: undefined,
-    SMTP_PORT: undefined,
-  },
+  env: mockEnv,
+  getEnv: () => mockEnv,
+  getAppUrl: () => mockEnv.NEXT_PUBLIC_APP_URL || mockEnv.NEXTAUTH_URL,
 }));
 
 // Mock Resend properly as a class

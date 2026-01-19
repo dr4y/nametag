@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { getEnv } from './env';
 
 // Models that support soft delete
 const SOFT_DELETE_MODELS = ['Person', 'Group', 'Relationship', 'RelationshipType', 'ImportantDate'] as const;
@@ -11,14 +12,17 @@ function isSoftDeleteModel(model: string): model is SoftDeleteModel {
 
 // Create a base Prisma client
 function createBaseClient() {
+  // Ensure env validation runs and DATABASE_URL is constructed if needed
+  const env = getEnv();
+
   const adapter = new PrismaPg({
-    connectionString: process.env.DATABASE_URL!,
+    connectionString: env.DATABASE_URL,
   });
 
   return new PrismaClient({
     adapter,
     log:
-      process.env.NODE_ENV === 'production'
+      env.NODE_ENV === 'production'
         ? ['error', 'warn']
         : ['query', 'info', 'warn', 'error'],
   });

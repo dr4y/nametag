@@ -5,7 +5,7 @@
 Nametag is a personal relationships manager that helps you remember the people in your life and how they're connected. Track birthdays, contact information, how people are connected, and visualize your network as an interactive graph.
 
 ![Dashboard](docs/screenshots/sc1.png)
-*Dashboard with network overview and statistics*
+_Dashboard with network overview and statistics_
 
 **[Try the hosted version →](https://nametag.one)**
 
@@ -22,29 +22,29 @@ Nametag solves this by giving you a single place to manage your personal network
 
 ![People Management](docs/screenshots/sc2.png)
 ![People Creation](docs/screenshots/sc7.png)
-*Create and manage your contacts with detailed information*
+_Create and manage your contacts with detailed information_
 
 ---
 
 ![Person Details](docs/screenshots/sc3.png)
 ![Relationship Types](docs/screenshots/sc6.png)
-*Define and manage custom relationship types*
+_Define and manage custom relationship types_
 
 ---
 
 ![Person Details](docs/screenshots/sc4.png)
-*Keep up-to-date information about the people you care about*
+_Keep up-to-date information about the people you care about_
 
 ---
 
 ![Groups](docs/screenshots/sc5.png)
-*Organize people into custom groups*
+_Organize people into custom groups_
 
 ---
 
 ![Light Mode](docs/screenshots/sc8.png)
 ![Light Mode](docs/screenshots/sc9.png)
-*Clean light theme for comfortable daytime use*
+_Clean light theme for comfortable daytime use_
 
 </details>
 
@@ -65,6 +65,7 @@ Nametag solves this by giving you a single place to manage your personal network
 **Hosted Service**: We offer a hosted version at [nametag.one](https://nametag.one) with a generous free tier (50 people) and affordable paid plans starting at $1/month. The hosted service helps fund development and maintenance of the open source project.
 
 **Self-Hosting**: You can also run Nametag on your own infrastructure for free with these benefits:
+
 - No account limits - store unlimited contacts
 - No email service required - accounts are auto-verified
 - Complete data ownership and privacy
@@ -79,29 +80,24 @@ The official Docker images support both **AMD64** (x86_64) and **ARM64** (aarch6
 ### Quick Start
 
 1. Create a directory for Nametag:
+
 ```bash
 mkdir nametag && cd nametag
 ```
 
 2. Create a `docker-compose.yml` file:
+
 ```yaml
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: nametag
+      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: nametag_db
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - redis_data:/data
 
   app:
     image: ghcr.io/mattogodoy/nametag:latest
@@ -110,12 +106,8 @@ services:
       - "3000:3000"
     env_file:
       - .env
-    environment:
-      - DATABASE_URL=postgresql://nametag:${DB_PASSWORD}@db:5432/nametag_db
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
     depends_on:
       - db
-      - redis
 
   cron:
     image: alpine:3.19
@@ -123,6 +115,7 @@ services:
     command: >
       sh -c "
         echo '0 8 * * * wget -q -O - --header=\"Authorization: Bearer '\"$$CRON_SECRET\"'\" http://app:3000/api/cron/send-reminders > /proc/1/fd/1 2>&1' > /etc/crontabs/root &&
+        echo '0 3 * * * wget -q -O - --header=\"Authorization: Bearer '\"$$CRON_SECRET\"'\" http://app:3000/api/cron/purge-deleted > /proc/1/fd/1 2>&1' >> /etc/crontabs/root &&
         crond -f -l 2
       "
     environment:
@@ -132,22 +125,22 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
 ```
 
 3. Create a `.env` file with required variables:
+
 ```bash
 # Generate secrets with: openssl rand -base64 32
 
-# Database
+# Database connection
+DB_HOST=db
+DB_PORT=5432
+DB_NAME=nametag_db
+DB_USER=nametag
 DB_PASSWORD=your-secure-database-password
 
-# Redis
-REDIS_PASSWORD=your-secure-redis-password
-
-# Application URLs
+# Application URL
 NEXTAUTH_URL=http://localhost:3000
-NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # NextAuth (must be at least 32 characters)
 NEXTAUTH_SECRET=your-nextauth-secret-minimum-32-characters
@@ -176,6 +169,7 @@ CRON_SECRET=your-cron-secret-minimum-16-characters
 ```
 
 4. Start the services:
+
 ```bash
 docker-compose up -d
 ```
@@ -188,32 +182,37 @@ The database will be automatically set up on first run.
 
 #### Required
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host:5432/db` |
-| `NEXTAUTH_URL` | Full URL where your app is hosted | `https://yourdomain.com` |
-| `NEXT_PUBLIC_APP_URL` | Public URL for redirects | `https://yourdomain.com` |
-| `NEXTAUTH_SECRET` | Secret for JWT encryption (min 32 chars) | Generate with `openssl rand -base64 32` |
-| `CRON_SECRET` | Secret for cron job authentication | Generate with `openssl rand -base64 16` |
-| `REDIS_URL` | Redis connection URL (required for production, optional for dev) | `redis://:password@redis:6379` |
-| `REDIS_PASSWORD` | Redis authentication password | Generate with `openssl rand -base64 32` |
+| Variable          | Description                                                       | Example                                 |
+| ----------------- | ----------------------------------------------------------------- | --------------------------------------- |
+| `DB_HOST`         | PostgreSQL server hostname                                        | `db` or `localhost`                     |
+| `DB_PORT`         | PostgreSQL server port                                            | `5432`                                  |
+| `DB_NAME`         | PostgreSQL database name                                          | `nametag_db`                            |
+| `DB_USER`         | PostgreSQL username                                               | `nametag`                               |
+| `DB_PASSWORD`     | PostgreSQL password                                               | `your-secure-password`                  |
+| `NEXTAUTH_URL`    | Application URL (for auth, emails, redirects)                     | `https://yourdomain.com`                |
+| `NEXTAUTH_SECRET` | Secret for JWT encryption (min 32 chars)                          | Generate with `openssl rand -base64 32` |
+| `CRON_SECRET`     | Secret for cron job authentication                                | Generate with `openssl rand -base64 16` |
+| `REDIS_URL`       | Redis connection URL (required for SaaS mode, optional otherwise) | `redis://:password@redis:6379`          |
+| `REDIS_PASSWORD`  | Redis authentication password                                     | Generate with `openssl rand -base64 32` |
+
+**Advanced database configuration:** Instead of using `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`, you can provide a full connection string with `DATABASE_URL=postgresql://user:pass@host:5432/db`. If `DATABASE_URL` is set, it takes precedence over the individual variables.
 
 #### Optional
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `RESEND_API_KEY` | API key from [Resend](https://resend.com) for email functionality | Not required for self-hosted |
-| `EMAIL_DOMAIN` | Verified domain for sending emails (required if using Resend or SMTP) | Not required for self-hosted |
-| `SMTP_HOST` | SMTP server hostname (alternative to Resend) | Not set |
-| `SMTP_PORT` | SMTP server port (587 for STARTTLS, 465 for SSL) | Not set |
-| `SMTP_SECURE` | Use SSL/TLS (true for port 465, false for 587) | `false` |
-| `SMTP_USER` | SMTP username (often your email address) | Not set |
-| `SMTP_PASS` | SMTP password or app-specific password | Not set |
-| `SMTP_REQUIRE_TLS` | Require STARTTLS for security | `true` |
-| `SMTP_FROM` | Override "from" address (use if server rejects custom addresses) | Not set |
-| `DISABLE_REGISTRATION` | Disable user registration after first user | `false` |
-| `NODE_ENV` | Environment mode | `production` |
-| `LOG_LEVEL` | Logging verbosity | `info` |
+| Variable               | Description                                                           | Default                      |
+| ---------------------- | --------------------------------------------------------------------- | ---------------------------- |
+| `RESEND_API_KEY`       | API key from [Resend](https://resend.com) for email functionality     | Not required for self-hosted |
+| `EMAIL_DOMAIN`         | Verified domain for sending emails (required if using Resend or SMTP) | Not required for self-hosted |
+| `SMTP_HOST`            | SMTP server hostname (alternative to Resend)                          | Not set                      |
+| `SMTP_PORT`            | SMTP server port (587 for STARTTLS, 465 for SSL)                      | Not set                      |
+| `SMTP_SECURE`          | Use SSL/TLS (true for port 465, false for 587)                        | `false`                      |
+| `SMTP_USER`            | SMTP username (often your email address)                              | Not set                      |
+| `SMTP_PASS`            | SMTP password or app-specific password                                | Not set                      |
+| `SMTP_REQUIRE_TLS`     | Require STARTTLS for security                                         | `true`                       |
+| `SMTP_FROM`            | Override "from" address (use if server rejects custom addresses)      | Not set                      |
+| `DISABLE_REGISTRATION` | Disable user registration after first user                            | `false`                      |
+| `NODE_ENV`             | Environment mode                                                      | `production`                 |
+| `LOG_LEVEL`            | Logging verbosity                                                     | `info`                       |
 
 ### Email Setup (Optional)
 
@@ -271,6 +270,7 @@ Most SMTP servers restrict which addresses you can send from:
    - Set `EMAIL_DOMAIN=yourdomain.com` and don't set `SMTP_FROM`
 
 **Common SMTP Providers:**
+
 - **Gmail**: `smtp.gmail.com:587` (requires [app password](https://support.google.com/accounts/answer/185833))
 - **Outlook**: `smtp-mail.outlook.com:587`
 - **SendGrid**: `smtp.sendgrid.net:587`
@@ -284,31 +284,45 @@ Most SMTP servers restrict which addresses you can send from:
 
 ### Redis Setup
 
-Redis is used for rate limiting authentication endpoints (login, registration, password resets) to protect against brute force attacks.
+Redis is used for rate limiting authentication endpoints to protect against brute force attacks.
 
-**For Production Deployments:**
+**For SaaS Mode (nametag.one):**
+
 - Redis is **required** and the application will fail to start without it
-- Protects against distributed attacks when running multiple app instances
-- Ensures rate limits persist across server restarts
+- Ensures consistent rate limiting across multiple server instances
+- Persists rate limits across server restarts
 
-**For Development/Testing:**
-- Redis is **optional** - the app will use in-memory rate limiting if Redis isn't configured
-- In-memory fallback works fine for local development
-- Limitations: Resets on server restart and doesn't work across multiple instances
+**For Self-Hosted Production:**
 
-**To run without Redis in development:**
-1. Simply omit the `REDIS_URL` environment variable from your `.env` file
-2. Remove or comment out the Redis service from `docker-compose.yml`
-3. The app will log a warning and continue with in-memory rate limiting
+- Redis is **optional but recommended**
+- Without Redis: Falls back to in-memory rate limiting
+- In-memory limitations: Resets on restart, doesn't work across multiple instances
+- For single-server deployments, in-memory works fine
+
+**For Development:**
+
+- Redis is **optional**
+- In-memory fallback works perfectly for local development
+
+**To run without Redis:**
+
+1. Simply omit `REDIS_URL` from your `.env` file
+2. Remove or comment out Redis service from your compose file
+3. The app will log a warning and use in-memory rate limiting
 
 **To enable Redis:**
-Follow the Quick Start guide above which includes Redis configuration. The Redis service is already included in the example `docker-compose.yml`.
+Redis is included in all deployment configurations:
+
+- **Dev Container**: `.devcontainer/docker-compose.yml`
+- **Local Development**: `docker-compose.services.yml`
+- **Production**: `docker-compose.yml`
 
 ### Restricting Registration (Optional)
 
 For public-facing instances, you may want to prevent strangers from creating accounts.
 
 Set `DISABLE_REGISTRATION=true` in your `.env` file. This allows:
+
 - The first user to register normally (when no users exist)
 - All subsequent registration attempts are blocked
 
@@ -321,6 +335,7 @@ To allow additional users later, set `DISABLE_REGISTRATION=false` and restart th
 For production deployments, use a reverse proxy like Nginx or Caddy with SSL:
 
 **Caddy example:**
+
 ```
 yourdomain.com {
     reverse_proxy localhost:3000
@@ -328,6 +343,7 @@ yourdomain.com {
 ```
 
 **Nginx example:**
+
 ```nginx
 server {
     listen 443 ssl http2;
@@ -356,18 +372,49 @@ server {
 - **Auth**: NextAuth.js
 - **Email**: Resend or SMTP (nodemailer)
 
+## Contributing & Development
+
+Want to contribute? We support two development environments:
+
+### Option 1: Dev Container (Easiest for new contributors)
+
+Perfect for getting started quickly with zero configuration.
+
+1. Install [VS Code](https://code.visualstudio.com/) and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Clone the repository
+3. Open in VS Code and click "Reopen in Container" when prompted
+4. Wait for automatic setup to complete (database migration & seeding)
+5. The dev server starts automatically - open `http://localhost:3000`
+
+**Note:** If the dev server doesn't start automatically, open a terminal in VS Code and run `npm run dev`
+
+### Option 2: Local Development (Best for daily development)
+
+Faster iteration and better debugging experience.
+
+1. **Prerequisites:** Node.js 20+ and Docker
+2. Clone the repository
+3. Install dependencies: `npm install`
+4. Start database services: `docker-compose -f docker-compose.services.yml up -d`
+5. Set up database: `./scripts/setup-db.sh`
+6. Start dev server: `npm run dev`
+7. Open `http://localhost:3000`
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup instructions, code guidelines, and how to submit pull requests.
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ## Roadmap
 
-ℹ️ *Contributions to any of these items are very welcome! Items that require the most help will have the **[HELP NEEDED]** tag. If you want to contribute to an item that does not have a PR or Issue associated to it, please create it yoursef.*
+ℹ️ _Contributions to any of these items are very welcome! Items that require the most help will have the **[HELP NEEDED]** tag. If you want to contribute to an item that does not have a PR or Issue associated to it, please create it yoursef._
 
 ### To do
+
 Future features and improvements, ordered by priority:
 
-- [ ] Improve development setup to make contributors' lives easier [[PR #25](https://github.com/mattogodoy/nametag/pull/25)]
+- [x] Improve development setup to make contributors' lives easier [[PR #25](https://github.com/mattogodoy/nametag/pull/25)]
 - [ ] Implement CardDAV support [[Issue #15](https://github.com/mattogodoy/nametag/issues/15)]
 - [ ] **[HELP NEEDED]** Mobile app (Native apps for Android and iOS are preferred)
 - [ ] Add journaling capabilities [[Issue #28](https://github.com/mattogodoy/nametag/issues/28)]
@@ -386,9 +433,9 @@ Future features and improvements, ordered by priority:
 
 Features and improvements that have already been implemented:
 
-- [X] ~~SMTP support~~ [[Issue #4](https://github.com/mattogodoy/nametag/issues/4), [PR #21](https://github.com/mattogodoy/nametag/pull/21)]
-- [X] ~~Option to disable registration~~ [[Issue #9](https://github.com/mattogodoy/nametag/issues/9), [PR #17](https://github.com/mattogodoy/nametag/pull/17)]
-- [X] ~~ARM build for docker images~~ [[Issue #14](https://github.com/mattogodoy/nametag/issues/14), [PR #18](https://github.com/mattogodoy/nametag/pull/18)]
+- [x] ~~SMTP support~~ [[Issue #4](https://github.com/mattogodoy/nametag/issues/4), [PR #21](https://github.com/mattogodoy/nametag/pull/21)]
+- [x] ~~Option to disable registration~~ [[Issue #9](https://github.com/mattogodoy/nametag/issues/9), [PR #17](https://github.com/mattogodoy/nametag/pull/17)]
+- [x] ~~ARM build for docker images~~ [[Issue #14](https://github.com/mattogodoy/nametag/issues/14), [PR #18](https://github.com/mattogodoy/nametag/pull/18)]
 
 ## License
 

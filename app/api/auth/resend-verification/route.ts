@@ -5,6 +5,7 @@ import { sendEmail, emailTemplates } from '@/lib/email';
 import { resendVerificationSchema, validateRequest } from '@/lib/validations';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { handleApiError, parseRequestBody } from '@/lib/api-utils';
+import { getAppUrl } from '@/lib/env';
 
 const TOKEN_EXPIRY_HOURS = 24;
 const RESEND_COOLDOWN_MINUTES = 2;
@@ -88,8 +89,7 @@ export async function POST(request: Request) {
     });
 
     // Send verification email
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const verificationUrl = `${baseUrl}/verify-email?token=${verifyToken}`;
+    const verificationUrl = `${getAppUrl()}/verify-email?token=${verifyToken}`;
     const { subject, html, text } = await emailTemplates.accountVerification(verificationUrl);
 
     await sendEmail({

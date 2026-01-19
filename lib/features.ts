@@ -36,6 +36,12 @@ export const features = {
 
   /** Require email verification for new accounts */
   emailVerification: () => isSaasMode(),
+
+  /** Enable Google OAuth provider */
+  googleOAuth: () => isSaasMode(),
+
+  /** Require Redis (fail if not configured) */
+  requireRedis: () => isSaasMode(),
 };
 
 /**

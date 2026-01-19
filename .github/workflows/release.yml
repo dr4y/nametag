@@ -144,7 +144,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.prod
+          file: ./Dockerfile
           platforms: linux/${{ matrix.arch }}
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ matrix.arch }}-${{ needs.prepare-release.outputs.version }}

@@ -17,6 +17,13 @@ const mocks = vi.hoisted(() => ({
   securityLoggerAuthFailure: vi.fn(),
 }));
 
+// Hoist mockEnv so it's available for vi.mock
+const mockEnv = vi.hoisted(() => ({
+  CRON_SECRET: 'test-cron-secret',
+  NEXT_PUBLIC_APP_URL: 'https://nametag.test',
+  NEXTAUTH_URL: 'https://nametag.test',
+}));
+
 // Mock Prisma
 vi.mock('../../lib/prisma', () => ({
   prisma: {
@@ -56,10 +63,9 @@ vi.mock('../../lib/nameUtils', () => ({
 
 // Mock env
 vi.mock('../../lib/env', () => ({
-  env: {
-    CRON_SECRET: 'test-cron-secret',
-    NEXT_PUBLIC_APP_URL: 'https://nametag.test',
-  },
+  env: mockEnv,
+  getEnv: () => mockEnv,
+  getAppUrl: () => mockEnv.NEXT_PUBLIC_APP_URL || mockEnv.NEXTAUTH_URL,
 }));
 
 // Mock logger

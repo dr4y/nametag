@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
-import { env } from "./env";
+import { env, getAppUrl } from "./env";
 import { escapeHtml } from "./sanitize";
 import { getTranslationsForLocale, type SupportedLocale } from "./i18n-utils";
 import { getUserLocale } from "./locale";
@@ -185,7 +185,7 @@ export function isEmailConfigured(): boolean {
   return provider !== null && provider.isConfigured();
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://nametag.one';
+const APP_URL = getAppUrl();
 
 // Brand colors matching the app
 const COLORS = {

@@ -9,17 +9,23 @@ describe('Email Provider Fallback', () => {
   describe('SMTP precedence over Resend', () => {
     it('should use SMTP when both SMTP and Resend are configured', async () => {
       // Mock env with both providers configured
+      const mockEnv = {
+        SMTP_HOST: 'smtp.test.com',
+        SMTP_PORT: 587,
+        SMTP_SECURE: false,
+        SMTP_REQUIRE_TLS: true,
+        SMTP_USER: 'test@example.com',
+        SMTP_PASS: 'test-password',
+        EMAIL_DOMAIN: 'test.example.com',
+        RESEND_API_KEY: 'test-resend-api-key', // Also configured
+        NEXTAUTH_URL: 'http://localhost:3000',
+        NEXT_PUBLIC_APP_URL: undefined,
+      };
+
       vi.doMock('../../lib/env', () => ({
-        env: {
-          SMTP_HOST: 'smtp.test.com',
-          SMTP_PORT: 587,
-          SMTP_SECURE: false,
-          SMTP_REQUIRE_TLS: true,
-          SMTP_USER: 'test@example.com',
-          SMTP_PASS: 'test-password',
-          EMAIL_DOMAIN: 'test.example.com',
-          RESEND_API_KEY: 'test-resend-api-key', // Also configured
-        },
+        env: mockEnv,
+        getEnv: () => mockEnv,
+        getAppUrl: () => mockEnv.NEXT_PUBLIC_APP_URL || mockEnv.NEXTAUTH_URL,
       }));
 
       const mockSmtpSendMail = vi.fn().mockResolvedValue({ messageId: 'smtp-123' });
@@ -60,13 +66,19 @@ describe('Email Provider Fallback', () => {
   describe('Resend fallback', () => {
     it('should use Resend when only Resend is configured', async () => {
       // Mock env with only Resend configured
+      const mockEnv = {
+        RESEND_API_KEY: 'test-resend-api-key',
+        EMAIL_DOMAIN: 'test.example.com',
+        SMTP_HOST: undefined,
+        SMTP_PORT: undefined,
+        NEXTAUTH_URL: 'http://localhost:3000',
+        NEXT_PUBLIC_APP_URL: undefined,
+      };
+
       vi.doMock('../../lib/env', () => ({
-        env: {
-          RESEND_API_KEY: 'test-resend-api-key',
-          EMAIL_DOMAIN: 'test.example.com',
-          SMTP_HOST: undefined,
-          SMTP_PORT: undefined,
-        },
+        env: mockEnv,
+        getEnv: () => mockEnv,
+        getAppUrl: () => mockEnv.NEXT_PUBLIC_APP_URL || mockEnv.NEXTAUTH_URL,
       }));
 
       const mockSmtpSendMail = vi.fn().mockResolvedValue({ messageId: 'smtp-123' });
@@ -107,13 +119,19 @@ describe('Email Provider Fallback', () => {
   describe('No provider configured', () => {
     it('should skip email gracefully when neither provider is configured', async () => {
       // Mock env with no providers configured
+      const mockEnv = {
+        RESEND_API_KEY: undefined,
+        EMAIL_DOMAIN: undefined,
+        SMTP_HOST: undefined,
+        SMTP_PORT: undefined,
+        NEXTAUTH_URL: 'http://localhost:3000',
+        NEXT_PUBLIC_APP_URL: undefined,
+      };
+
       vi.doMock('../../lib/env', () => ({
-        env: {
-          RESEND_API_KEY: undefined,
-          EMAIL_DOMAIN: undefined,
-          SMTP_HOST: undefined,
-          SMTP_PORT: undefined,
-        },
+        env: mockEnv,
+        getEnv: () => mockEnv,
+        getAppUrl: () => mockEnv.NEXT_PUBLIC_APP_URL || mockEnv.NEXTAUTH_URL,
       }));
 
       const mockSmtpSendMail = vi.fn();
@@ -157,17 +175,23 @@ describe('Email Provider Fallback', () => {
   describe('SMTP only configuration', () => {
     it('should use SMTP when only SMTP is configured', async () => {
       // Mock env with only SMTP configured
+      const mockEnv = {
+        SMTP_HOST: 'smtp.test.com',
+        SMTP_PORT: 587,
+        SMTP_SECURE: false,
+        SMTP_REQUIRE_TLS: true,
+        SMTP_USER: 'test@example.com',
+        SMTP_PASS: 'test-password',
+        EMAIL_DOMAIN: 'test.example.com',
+        RESEND_API_KEY: undefined,
+        NEXTAUTH_URL: 'http://localhost:3000',
+        NEXT_PUBLIC_APP_URL: undefined,
+      };
+
       vi.doMock('../../lib/env', () => ({
-        env: {
-          SMTP_HOST: 'smtp.test.com',
-          SMTP_PORT: 587,
-          SMTP_SECURE: false,
-          SMTP_REQUIRE_TLS: true,
-          SMTP_USER: 'test@example.com',
-          SMTP_PASS: 'test-password',
-          EMAIL_DOMAIN: 'test.example.com',
-          RESEND_API_KEY: undefined,
-        },
+        env: mockEnv,
+        getEnv: () => mockEnv,
+        getAppUrl: () => mockEnv.NEXT_PUBLIC_APP_URL || mockEnv.NEXTAUTH_URL,
       }));
 
       const mockSmtpSendMail = vi.fn().mockResolvedValue({ messageId: 'smtp-123' });

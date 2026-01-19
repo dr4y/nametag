@@ -64,6 +64,12 @@ const mocks = vi.hoisted(() => ({
   cronJobLogUpdate: vi.fn(),
 }));
 
+// Hoist mockEnv so it's available for vi.mock
+const mockEnv = vi.hoisted(() => ({
+  CRON_SECRET: 'test-cron-secret',
+  NEXTAUTH_URL: 'http://localhost:3000',
+}));
+
 // Track if withDeleted was used
 let withDeletedClient: any = null;
 
@@ -172,9 +178,9 @@ vi.mock('../../lib/auth', () => ({
 
 // Mock env for cron secret
 vi.mock('../../lib/env', () => ({
-  env: {
-    CRON_SECRET: 'test-cron-secret',
-  },
+  env: mockEnv,
+  getEnv: () => mockEnv,
+  getAppUrl: () => mockEnv.NEXTAUTH_URL,
 }));
 
 // Mock logger

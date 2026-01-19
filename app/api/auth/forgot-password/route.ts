@@ -5,6 +5,7 @@ import { sendEmail, emailTemplates } from '@/lib/email';
 import { forgotPasswordSchema, validateRequest } from '@/lib/validations';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { handleApiError, parseRequestBody } from '@/lib/api-utils';
+import { getAppUrl } from '@/lib/env';
 
 const TOKEN_EXPIRY_HOURS = 1;
 const RESEND_COOLDOWN_MINUTES = 2;
@@ -79,8 +80,7 @@ export async function POST(request: Request) {
     });
 
     // Send reset email
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+    const resetUrl = `${getAppUrl()}/reset-password?token=${resetToken}`;
     const { subject, html, text } = await emailTemplates.passwordReset(resetUrl);
 
     await sendEmail({

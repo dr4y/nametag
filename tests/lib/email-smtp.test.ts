@@ -1,17 +1,23 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock the env module with SMTP configured
+const mockEnv = {
+  SMTP_HOST: 'smtp.test.com',
+  SMTP_PORT: 587,
+  SMTP_SECURE: false,
+  SMTP_REQUIRE_TLS: true,
+  SMTP_USER: 'test@example.com',
+  SMTP_PASS: 'test-password',
+  EMAIL_DOMAIN: 'test.example.com',
+  RESEND_API_KEY: undefined, // Explicitly not configured
+  NEXTAUTH_URL: 'http://localhost:3000',
+  NEXT_PUBLIC_APP_URL: undefined,
+};
+
 vi.mock('../../lib/env', () => ({
-  env: {
-    SMTP_HOST: 'smtp.test.com',
-    SMTP_PORT: 587,
-    SMTP_SECURE: false,
-    SMTP_REQUIRE_TLS: true,
-    SMTP_USER: 'test@example.com',
-    SMTP_PASS: 'test-password',
-    EMAIL_DOMAIN: 'test.example.com',
-    RESEND_API_KEY: undefined, // Explicitly not configured
-  },
+  env: mockEnv,
+  getEnv: () => mockEnv,
+  getAppUrl: () => mockEnv.NEXT_PUBLIC_APP_URL || mockEnv.NEXTAUTH_URL,
 }));
 
 // Mock nodemailer

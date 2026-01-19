@@ -46,7 +46,7 @@ if ! docker ps | grep -q $DOCKER_DB_CONTAINER; then
     echo -e "${RED}❌ Not running${NC}"
     echo ""
     echo "Please start the database:"
-    echo "  docker-compose -f docker-compose.prod.yml up -d db"
+    echo "  docker-compose up -d db"
     exit 1
 fi
 echo -e "${GREEN}✅${NC}"

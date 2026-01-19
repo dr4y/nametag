@@ -4,6 +4,7 @@ import { validateRequest } from '@/lib/validations';
 import { createCheckoutSession, isPromotionActive } from '@/lib/billing';
 import { prisma } from '@/lib/prisma';
 import { isSaasMode } from '@/lib/features';
+import { getAppUrl } from '@/lib/env';
 
 const checkoutSchema = z.object({
   tier: z.enum(['PERSONAL', 'PRO']),
@@ -46,9 +47,9 @@ export const POST = withAuth(async (request, session) => {
     }
 
     // Get base URL for success/cancel redirects
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const successUrl = `${baseUrl}/settings/billing?success=true`;
-    const cancelUrl = `${baseUrl}/settings/billing?canceled=true`;
+    const appUrl = getAppUrl();
+    const successUrl = `${appUrl}/settings/billing?success=true`;
+    const cancelUrl = `${appUrl}/settings/billing?canceled=true`;
 
     const checkoutSession = await createCheckoutSession(
       session.user.id,
