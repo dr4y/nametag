@@ -102,8 +102,8 @@
       "language": {
         "title": "言語",
         "description": "お好みの言語を選択してください",
-        "en": "英語",
-        "esES": "スペイン語（スペイン）",
+        "en": "English",
+        "esES": "Español (España)",
         "jaJP": "日本語"
       }
     },
