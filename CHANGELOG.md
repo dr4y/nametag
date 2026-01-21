@@ -6,19 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.16.0](https://github.com/mattogodoy/nametag/compare/v0.15.4...v0.16.0) (2026-01-21)
+## [0.16.1](https://github.com/mattogodoy/nametag/compare/v0.16.0...v0.16.1) (2026-01-21)
 
-### Features
+### Bug Fixes
 
-* Create release for Japanese translations (PR [#36](https://github.com/mattogodoy/nametag/issues/36)) ([c684a74](https://github.com/mattogodoy/nametag/commit/c684a74ff1bb6465439f5bf229fa2ce39ce1ca3d))
+* Add necessary changes for new language ([c12ee99](https://github.com/mattogodoy/nametag/commit/c12ee9993142a30e49bec6abe014f48fe862af1a))
 
 ### Changelog
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v0.16.1](https://github.com/mattogodoy/nametag/compare/v0.16.0...v0.16.1)
+
+- 🐛 Fix: Add docs and a few fixes for new language [`#47`](https://github.com/mattogodoy/nametag/pull/47)
+- 🔧 Chore: Added instructions for adding a new language in the CONTRIBUTING file [`63d9253`](https://github.com/mattogodoy/nametag/commit/63d92538377ae4ceaab48cce7750798a48399fcf)
+- 🐛 Fix: Add necessary changes for new language [`c12ee99`](https://github.com/mattogodoy/nametag/commit/c12ee9993142a30e49bec6abe014f48fe862af1a)
+
 #### [v0.16.0](https://github.com/mattogodoy/nametag/compare/v0.15.4...v0.16.0)
 
+> 21 January 2026
+
 - add Japanese translation [`#36`](https://github.com/mattogodoy/nametag/pull/36)
+- 🔧 Chore: release v0.16.0 [`886d55b`](https://github.com/mattogodoy/nametag/commit/886d55b6f8dfed451da42c306ca89c8dfe077b17)
 - ✨ Feature: Create release for Japanese translations (PR #36) [`c684a74`](https://github.com/mattogodoy/nametag/commit/c684a74ff1bb6465439f5bf229fa2ce39ce1ca3d)
 - Add files via upload [`a3cfe0b`](https://github.com/mattogodoy/nametag/commit/a3cfe0b680aba802b55a93a3fa5ec27250fa0078)
 - Delete package-lock.json [`2dc875c`](https://github.com/mattogodoy/nametag/commit/2dc875c3e20a43e4064122eec5e585a9e22eafd3)
